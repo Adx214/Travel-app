@@ -11,7 +11,8 @@ const bcrypt = require("bcrypt")
 
 
 dotenv.config()
-app.use(bodyParser.json())
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/api",mrouter)
 app.use("/userapi",urouter)
 

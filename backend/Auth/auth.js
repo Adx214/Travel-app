@@ -6,11 +6,12 @@ const generateToken = (user) => {
         email: user.email
     }
     const token = jwt.sign(payload, process.env.secret, { expiresIn: '1h' });
-    console.log('Generated JWT Token:', token); // Debugging line
+    
     return token
  }
 
  const authMiddleware = (req, res, next) => {
+    
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });

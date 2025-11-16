@@ -3,6 +3,7 @@ const mrouter = express.Router()
 const Memories = require("../dbconfig/schema/memories")
 const User = require("../dbconfig/schema/user")
 const multer = require("multer")
+const { authMiddleware } = require("../Auth/auth")
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -19,11 +20,10 @@ const upload = multer({ storage: storage })
 mrouter.get("/",(req,res)=>{
     res.send("This is memeory")
 })
-mrouter.post("/addmemory",upload.single('image'),async(req,res)=>{
-    console.log(req.body);
-    
+mrouter.post("/addmemory",upload.single('image'),authMiddleware,async(req,res)=>{
+
     const body = req.body
-    console.log(body);
+  
     
     if (!req.file) {
         return res.status(400).send('No file uploaded.')
@@ -34,11 +34,11 @@ mrouter.post("/addmemory",upload.single('image'),async(req,res)=>{
         description : body.description,
         imageUrl : imageUrl,
         date : Date.now(),
-        createdBy : body.createdBy
+        createdBy : req.user.id
     })
     await m.save()
     // Add the memory to the user's memories array
-    const user = await User.findById(body.createdBy)
+    const user = await User.findById(req.user.id)
     if (user) {
         user.memories.push(m._id)
         await user.save()
@@ -49,7 +49,7 @@ mrouter.post("/addmemory",upload.single('image'),async(req,res)=>{
     }
     
 })
-mrouter.delete("/deletememory/:id",async(req,res)=>{
+mrouter.delete("/deletememory/:id",authMiddleware,async(req,res)=>{
     const memoryId = req.params.id
     const memory = await Memories.findByIdAndDelete(memoryId)
     if(memory){
@@ -64,7 +64,7 @@ mrouter.delete("/deletememory/:id",async(req,res)=>{
         res.status(404).json({message: "Memory not found"})
     }
 })
-mrouter.patch("/updatememory/:id",async(req,res)=>{
+mrouter.patch("/updatememory/:id",authMiddleware,async(req,res)=>{
     const memoryId = req.params.id
     const body = req.body
     const memory = await Memories.findByIdAndUpdate(memoryId,body,{new:true})
@@ -74,6 +74,8 @@ mrouter.patch("/updatememory/:id",async(req,res)=>{
         res.status(404).json({message: "Memory not found"})
     }
 })
+
+
 
 
 module.exports = mrouter
