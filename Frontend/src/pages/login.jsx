@@ -17,10 +17,11 @@ const Login = () => {
         console.log(res);
         
         if (res.status === 200) {
+            navigate("/dashboard");
             console.log('====================================');
             console.log('Login Successful');
             console.log('====================================');
-            navigate("/dashboard");
+            localStorage.setItem("token", res.data.token);
             
         } else if (res.status === 401) {
            alert("Invalid Credentials");

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import axios from "axios";
 const memories = [
@@ -19,6 +19,7 @@ const memories = [
 ];
 
 const ViewMemory = () => {
+
   const { id } = useParams();           // 👈 GET ID FROM URL
   const navigate = useNavigate();
   const memory = memories.find(m => m.id === id);

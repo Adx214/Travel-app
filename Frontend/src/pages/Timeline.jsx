@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import axios from "axios";
 const memories = [
   {
     id: 1,
@@ -17,8 +18,32 @@ const memories = [
   }
 ];
 
-const Timeline = ({ onAdd = () => {}, onEdit = () => {}, onLogout = () => {} }) => {
+const Timeline = ({ onEdit = () => { }, onLogout = () => { } }) => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const onAdd = () => {
+    navigate("/add-memory");
+  }
+  useEffect(() => {
+    const fetchMemories = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:3000/api/getmemories",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        console.log(res.data); // <-- your memories data
+      } catch (err) {
+        console.error("Error fetching memories:", err);
+      }
+    };
+
+    fetchMemories();
+  }, []);
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 text-gray-900">
@@ -46,7 +71,7 @@ const Timeline = ({ onAdd = () => {}, onEdit = () => {}, onLogout = () => {} }) 
           />
 
           {open && (
-            <div 
+            <div
               className="absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg w-36 shadow-lg z-10"
               onMouseLeave={() => setOpen(false)}
             >
