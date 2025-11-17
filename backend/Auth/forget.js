@@ -27,7 +27,7 @@ const sendOTP = async (req, res) => {
     subject: "Password Reset OTP",
     text: `Your OTP for password reset is ${otp}. It is valid for 10 minutes.`
   })
-  res.json({ message: "OTP sent to your email" })
+  res.status(200).json({ message: "OTP sent to your email" })
 }
 
 const verifyOTP = async (req, res) => {
@@ -52,6 +52,8 @@ const verifyOTP = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
     const {newPassword,email} = req.body
+    console.log(req.body);
+    
     if(!newPassword || !email){
       return res.status(400).json({message:"All fields are required"})
     }

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import axios from "axios";
+import { useState } from "react";
 const memories = [
   {
     id: "1",
@@ -19,10 +20,50 @@ const memories = [
 ];
 
 const ViewMemory = () => {
+  const [memory, setmemory] = useState('')
+  const [url, seturl] = useState('')
+  const [ImgPop, setImgPop] = useState(false);
 
   const { id } = useParams();           // 👈 GET ID FROM URL
   const navigate = useNavigate();
-  const memory = memories.find(m => m.id === id);
+  useEffect(() => {
+    const fetchMemory = async () => {
+      const res = await axios.get(`http://localhost:3000/api/getmemory/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      console.log(res);
+      if (res.status === 200) {
+        const mem = res.data.memory;
+        setmemory(mem);
+        console.log(memory.imageUrl);
+        seturl(`http://localhost:3000${mem.imageUrl}`)
+        console.log("URL IS ", url);
+
+
+      } else {
+        alert("Failed to fetch memory. Please try again.");
+
+      }
+
+    }
+    fetchMemory();
+  }, [])
+  const deleteHandler = async () => {
+    const res = await axios.delete(`http://localhost:3000/api/deletememory/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+    if (res.status === 200) {
+      alert("Memory deleted successfully");
+      navigate(-1);
+    } else {
+      alert("Failed to delete memory. Please try again.");
+    }
+  }
+
 
   if (!memory) {
     return (
@@ -32,6 +73,7 @@ const ViewMemory = () => {
     );
   }
 
+
   return (
     <div className="min-h-screen bg-background-light text-[#111618] p-6 flex justify-center">
 
@@ -39,9 +81,30 @@ const ViewMemory = () => {
 
         {/* IMAGE */}
         <div
-          className="w-full h-80 bg-cover bg-center"
-          style={{ backgroundImage: `url(${memory.img})` }}
+          className="w-full h-80 bg-cover bg-center cursor-pointer"
+          style={{ backgroundImage: `url(${url})` }}
+          onClick={() => setImgPop(true)}
         ></div>
+        {ImgPop && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+            onClick={() => setImgPop(false)}
+          >
+            <img
+              src={url}
+              alt="Full Memory"
+              className="max-w-[90%] max-h-[90%] rounded-lg shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            <button
+              className="absolute top-8 right-8 text-white text-4xl font-bold"
+              onClick={() => setImgPop(false)}
+            >
+              &times;
+            </button>
+          </div>
+        )}
 
         {/* CONTENT */}
         <div className="p-8">
@@ -56,10 +119,10 @@ const ViewMemory = () => {
             </button>
 
             <button
-              onClick={() => navigate(`/edit/${memory.id}`)}
-              className="px-5 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90"
+              onClick={() => deleteHandler()}
+              className="px-5 py-2 bg-red-700 text-white rounded-lg font-semibold hover:bg-primary/90"
             >
-              Edit Memory
+              Delete Memory
             </button>
           </div>
 
@@ -71,7 +134,7 @@ const ViewMemory = () => {
 
           {/* DESCRIPTION */}
           <p className="text-gray-700 text-base leading-relaxed">
-            {memory.desc}
+            {memory.description}
           </p>
         </div>
       </div>

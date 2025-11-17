@@ -1,43 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
-const memories = [
-  {
-    id: 1,
-    title: "Kyoto, Japan",
-    date: "Summer 2023",
-    desc: "A journey through ancient temples and serene gardens.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDWLWUIRGHDAvV9uCv85tsIBhvxQTeVLXR52SEXpCHUgtg3gTaplYfKIaqeVK4R3PyYizjCQOlnzcywHCjdQEku8oR51qBsIRPPJkZTQ6IP7qi0BHKGKjfYvrgXQ2C1YCwQ9OG03PvhX7rGDnvCHx02TcdT7gP6BsDw6r0HE5KD1B6s8RudZWOI9x9BUHS5qNfNzf_Z6Y60tH-yA-gVPKvstV6Lq71PPpFcO8Jtxg_4k3JvyfSPmXjXEt7wuDe37IIdavF4Ioz95yJJ"
-  },
-  {
-    id: 2,
-    title: "Patagonia",
-    date: "Spring 2023",
-    desc: "Unforgettable trek through amazing landscapes.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDbKOB-HyoHbPLGr_5w1E86Jzi0jPdFIlmR1M2cosTE_PdSKK_8Vbdp3aOZuK69kH9CBNqF_zdovgHPHoBkUCepfbAohlRV-Ms9sLcS1_6WG7Kg9dCZwnS6-XgZCUFHpB9jvC7WhF0ZUkVVrJ4cc1j2hgY4y_6RgjQk2XxEED17yWW7KEKvxWzV5fXCLLemFityWEV_KRNYF5bsXriWgRs5S2mYED3AnobvGhCXy0lCsUbztfeWpukrJ4NoBLcKwFn3skd2UW8YUmm5"
-  }
-];
 
-const Timeline = ({ onEdit = () => { }, onLogout = () => { } }) => {
+const Timeline = () => {
+  const [memories, setMemories] = useState([]);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const onAdd = () => {
-    navigate("/add-memory");
-  }
+
+  // FETCH REAL MEMORIES
   useEffect(() => {
     const fetchMemories = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:3000/api/getmemories",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const res = await axios.get("http://localhost:3000/api/getmemories", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-        console.log(res.data); // <-- your memories data
+        setMemories(res.data.memories); // <-- REAL DATA
       } catch (err) {
         console.error("Error fetching memories:", err);
       }
@@ -46,13 +26,27 @@ const Timeline = ({ onEdit = () => { }, onLogout = () => { } }) => {
     fetchMemories();
   }, []);
 
+  // VIEW MEMORY
+  const onView = (id) => {
+    navigate(`/memory/${id}`);
+  };
+
+  // ADD MEMORY
+  const onAdd = () => {
+    navigate("/add-memory");
+  };
+
+  // LOGOUT
+  const onLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen p-6 bg-gray-50 text-gray-900">
 
       {/* HEADER */}
       <header className="flex justify-between items-center mb-8">
-
-        {/* LOGO */}
         <div className="flex items-center gap-2 text-blue-600">
           <svg width="32" height="32" fill="currentColor" viewBox="0 0 48 48">
             <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" />
@@ -92,24 +86,30 @@ const Timeline = ({ onEdit = () => { }, onLogout = () => { } }) => {
 
       {/* MEMORY GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {memories.length === 0 && (
+          <p className="text-gray-600 text-lg">No memories found. Add one!</p>
+        )}
+
         {memories.map((m) => (
-          <div key={m.id} className="flex flex-col gap-3 pb-4">
+          <div key={m._id} className="flex flex-col gap-3 pb-4">
 
             {/* IMAGE */}
             <div
               className="w-full aspect-[3/4] rounded-xl bg-cover bg-center shadow-md hover:shadow-lg transition-shadow"
-              style={{ backgroundImage: `url(${m.img})` }}
+              style={{
+                backgroundImage: `url(http://localhost:3000${m.imageUrl})`
+              }}
             />
 
             {/* TEXT */}
             <div>
               <p className="text-lg font-semibold text-gray-900">{m.title}</p>
-              <p className="text-sm text-gray-600">{m.date}</p>
-              <p className="text-sm text-gray-600 mt-1">{m.desc}</p>
+              <p className="text-sm text-gray-600">{new Date(m.date).toDateString()}</p>
+              <p className="text-sm text-gray-600 mt-1">{m.description}</p>
 
               {/* VIEW BUTTON */}
               <button
-                onClick={() => onEdit(m.id)}
+                onClick={() => onView(m._id)}
                 className="mt-3 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 View
@@ -124,11 +124,13 @@ const Timeline = ({ onEdit = () => { }, onLogout = () => { } }) => {
         onClick={onAdd}
         className="fixed bottom-8 right-8 flex items-center gap-2 px-5 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-lg hover:shadow-xl hover:bg-blue-700 transition-all"
       >
-        <svg width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" stroke="currentColor" fill="none" strokeWidth="2"
+             strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 5v14M5 12h14" />
         </svg>
         Add Memory
       </button>
+
     </div>
   );
 };
