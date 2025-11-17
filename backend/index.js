@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api",mrouter)
 app.use("/userapi",urouter)
-
+app.use('/uploads', express.static('uploads'));
 app.get("/",(req,res)=>{
     res.send("Hello WOrld")
 })

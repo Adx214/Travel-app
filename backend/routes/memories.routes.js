@@ -50,7 +50,8 @@ mrouter.post("/addmemory",upload.single('image'),authMiddleware,async(req,res)=>
     
 })
 mrouter.delete("/deletememory/:id",authMiddleware,async(req,res)=>{
-    const memoryId = req.params.id
+    try {
+        const memoryId = req.params.id
     const memory = await Memories.findByIdAndDelete(memoryId)
     if(memory){
         // Also remove the memory reference from the user's memories array
@@ -62,6 +63,10 @@ mrouter.delete("/deletememory/:id",authMiddleware,async(req,res)=>{
         res.json({message: "Memory deleted successfully"})
     }else{
         res.status(404).json({message: "Memory not found"})
+    }
+    } catch (error) {
+        console.log(error);
+        
     }
 })
 mrouter.patch("/updatememory/:id",authMiddleware,async(req,res)=>{

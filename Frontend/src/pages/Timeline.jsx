@@ -31,6 +31,7 @@ const Timeline = ({ onEdit = () => { }, onLogout = () => { } }) => {
           "http://localhost:3000/api/getmemories",
           {
             headers: {
+              "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }

@@ -11,8 +11,9 @@ const generateToken = (user) => {
  }
 
  const authMiddleware = (req, res, next) => {
-    
-    const token = req.headers.authorization?.split(' ')[1];
+    console.log("USed");
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
@@ -23,5 +24,10 @@ const generateToken = (user) => {
         req.user = decoded;
         next();
     });
+    } catch (error) {
+        console.log(error);
+        
+        
+    }
  }
 module.exports = { generateToken, authMiddleware };
