@@ -74,6 +74,20 @@ mrouter.patch("/updatememory/:id",authMiddleware,async(req,res)=>{
         res.status(404).json({message: "Memory not found"})
     }
 })
+mrouter.get("/getmemories",authMiddleware,async(req,res)=>{
+    const userId = req.user.id
+    const memories = await Memories.find({createdBy: userId})
+    res.json({memories: memories})
+})
+mrouter.get("/getmemory/:id",authMiddleware,async(req,res)=>{
+    const memoryId = req.params.id
+    const memory = await Memories.findById(memoryId)
+    if(memory && memory.createdBy.toString() === req.user.id){
+        res.status(200).json({memory: memory})
+    }else{
+        res.status(404).json({message: "Memory not found"})
+    }
+})
 
 
 

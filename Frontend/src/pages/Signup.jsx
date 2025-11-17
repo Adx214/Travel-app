@@ -1,7 +1,29 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router";
+
 
 const Signup = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm()
+  const navigate = useNavigate();
+  const onSubmit = async(data)=>{
+    const res =await axios.post("http://localhost:3000/userapi/register",data )
+    console.log(res);
+    if (res.status ===200){
+        alert("Registration Successful");
+        navigate("/login");
+    }else{
+        alert("Registration Failed. Please try again.");
+    }
+
+  }
 
     return (
         <div className="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden font-display">
@@ -43,10 +65,13 @@ const Signup = () => {
                                 </div>
 
                                 {/* FORM FIELDS */}
-                                <form action="">
+                               
+                                <form onSubmit={handleSubmit(onSubmit)}>
+                                     
                                     <div className="flex flex-col gap-4">
 
                                         {/* Username */}
+                                        {errors.username && <span className="text-red-500">PLEASE ENTER USERNAME</span>}
                                         <label className="flex flex-col">
                                             <p className="text-[#111618] dark:text-gray-300 pb-2 font-medium">
                                                 Username
@@ -54,10 +79,12 @@ const Signup = () => {
                                             <input
                                                 className="form-input w-full rounded-lg border bg-white dark:bg-gray-700 dark:border-gray-600 h-14 p-[15px] text-base dark:text-white placeholder:text-[#617c89] focus:ring-2 focus:ring-primary/50"
                                                 placeholder="Enter your username"
+                                                {...register("username", { required: true })}
                                             />
                                         </label>
 
                                         {/* Email */}
+                                        {errors.email && <span className="text-red-500">PLEASE ENTER EMAIL</span>}
                                         <label className="flex flex-col">
                                             <p className="text-[#111618] dark:text-gray-300 pb-2 font-medium">
                                                 Email
@@ -66,10 +93,12 @@ const Signup = () => {
                                                 type="email"
                                                 className="form-input w-full rounded-lg border bg-white dark:bg-gray-700 dark:border-gray-600 h-14 p-[15px] text-base dark:text-white placeholder:text-[#617c89] focus:ring-2 focus:ring-primary/50"
                                                 placeholder="Enter your email address"
+                                                {...register("email", { required: true })}
                                             />
                                         </label>
 
                                         {/* Bio */}
+                                        
                                         <label className="flex flex-col">
                                             <p className="text-[#111618] dark:text-gray-300 pb-2 font-medium">
                                                 Bio
@@ -78,20 +107,23 @@ const Signup = () => {
                                                 rows="3"
                                                 className="form-input w-full rounded-lg border bg-white dark:bg-gray-700 dark:border-gray-600 p-[15px] text-base dark:text-white placeholder:text-[#617c89] focus:ring-2 focus:ring-primary/50"
                                                 placeholder="Tell us something about yourself..."
+                                                {...register("bio")}
                                             ></textarea>
                                         </label>
 
                                         {/* Password */}
+                                        {errors.password && <span className="text-red-500">PLEASE ENTER PASSWORD</span>}
                                         <label className="flex flex-col">
                                             <p className="text-[#111618] dark:text-gray-300 pb-2 font-medium">
                                                 Password
-                                            </p>
+                                            </p> 
 
                                             <div className="flex w-full items-stretch rounded-lg">
                                                 <input
                                                     type={showPassword ? "text" : "password"}
                                                     className="form-input w-full rounded-l-lg border bg-white dark:bg-gray-700 dark:border-gray-600 h-14 p-[15px] pr-2 text-base dark:text-white placeholder:text-[#617c89] focus:ring-2 focus:ring-primary/50 border-r-0"
                                                     placeholder="Enter your password"
+                                                    {...register("password", { required: true, message:"Password is required" })}
                                                 />
 
                                                 <button

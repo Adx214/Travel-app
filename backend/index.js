@@ -8,9 +8,12 @@ const memories = require("./dbconfig/schema/memories")
 const urouter = require("./routes/user.routes")
 const bodyParser = require('body-parser')
 const bcrypt = require("bcrypt")
+const cors = require("cors")
+const morgan = require("morgan")
 
-
+app.use(morgan("dev"))
 dotenv.config()
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api",mrouter)

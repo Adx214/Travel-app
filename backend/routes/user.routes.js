@@ -9,19 +9,33 @@ urouter.get("/",(req,res)=>{
     res.send("This is user route")
 })
 
-urouter.post("/register",async(req,res)=>{
-    const body = req.body
-    console.log(`user name is ${body.username}`);
-    console.log(`user email is ${body.email}`);
-    console.log(`user password is ${body.password}`);
-    const u = await user.create({
-        username : body.username,
-        email : body.email,
-        password : await bcrypt.hash(body.password,10)
+urouter.post("/register", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Create user
+    const u  = await user.create({
+        username : username,
+        email : email,
+        password : await bcrypt.hash(password,10)
     })
-   
-    res.send("This is user registration route")
-})
+
+    res.status(200).json({ message: "User registered successfully" });
+
+  } catch (err) {
+    console.log(err);
+
+    // 👉 Duplicate email OR username error
+    if (err.code === 11000) {
+      return res.status(409).json({
+        message: "Email or username already exists"
+      });
+    }
+
+    // Generic server error
+    res.status(500).json({ message: "Server error" });
+  }
+});
 urouter.patch("/update/",authMiddleware,async(req,res)=>{
     const body = req.body
     const uid = req.user.id
@@ -44,13 +58,15 @@ urouter.patch("/update-password",authMiddleware,async(req,res)=>{
 })
 urouter.post("/login",async(req,res)=>{
     const {username,password} = req.body
+    console.log(req.body);
+    
     const u = await user.findOne({username})
     if(u){
         const isMatch = await bcrypt.compare(password,u.password)
         if(isMatch){
             const token = generateToken(u)
             res.setHeader("Authorization",`Bearer ${token}`)
-            res.json({message:"Login successful"})
+            res.json({message:"Login successful",token:token})
         }else{
             res.status(401).json({message:"Invalid username or password"})
         }

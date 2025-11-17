@@ -1,7 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
-
-// TEMP data — remove later when using backend
+import axios from "axios";
 const memories = [
   {
     id: "1",
@@ -22,8 +21,6 @@ const memories = [
 const ViewMemory = () => {
   const { id } = useParams();           // 👈 GET ID FROM URL
   const navigate = useNavigate();
-
-  // Find the memory using id param
   const memory = memories.find(m => m.id === id);
 
   if (!memory) {
